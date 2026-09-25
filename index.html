@@ -184,6 +184,12 @@
   .ai-badge:hover { background: var(--gs-purple); color:white; }
   .ai-badge.suspicious { background:#fdf7e0; border-color:#8a6d00; color:#8a6d00; }
   .ai-badge.suspicious:hover { background:#8a6d00; color:white; }
+  .ai-badge.needs-info { background:#eef0f2; border-color: var(--gs-gray-2); color: var(--gs-gray-1); }
+  .ai-badge.needs-info:hover { background: var(--gs-gray-1); color:white; border-color: var(--gs-gray-1); }
+  .prior-note-banner { display:flex; border-radius:5px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.25); margin: 0 24px 20px; max-width:1100px; }
+  .prior-note-banner .icon { width:56px; flex:none; background: var(--gs-gray-1); display:flex; align-items:center; justify-content:center; color:white; font-size:22px; }
+  .prior-note-banner .body { background:white; flex:1; padding:12px 16px; font-size:15px; color:black; }
+  .prior-note-banner .body b { display:block; margin-bottom:2px; color: var(--gs-gray-1); }
   .ai-none { color: var(--gs-gray-2); }
 
   .confidence-banner { display:flex; border-radius:5px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.25); margin: 0 24px 20px; max-width: 1100px; }
@@ -227,10 +233,41 @@
   .sort-btn.active-tab { background: var(--gs-blue); color:white; border-color: var(--gs-blue); }
   .link-inline { color: var(--gs-blue); font-weight:600; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-top:6px; }
 
+  .name-cell { display:flex; align-items:center; gap:7px; }
+  .ai-resolved { color: var(--gs-purple); font-size:13px; cursor:help; position:relative; display:inline-flex; }
+  .ai-resolved:hover::after {
+    content: attr(data-tooltip); position:absolute; bottom:135%; left:50%; transform:translateX(-50%);
+    background: var(--gs-gray-1); color:white; padding:9px 11px; border-radius:6px; font-size:12px; font-weight:400;
+    white-space:normal; width:240px; text-align:left; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:20; line-height:1.4;
+  }
+  .ai-resolved:hover::before {
+    content:""; position:absolute; bottom:120%; left:50%; transform:translateX(-50%);
+    border:6px solid transparent; border-top-color: var(--gs-gray-1); z-index:20;
+  }
+
+  .matrix-wrap { padding: 0 24px 24px; max-width:1100px; overflow-x:auto; }
+  table.matrix-table { width:100%; border-collapse:collapse; background:white; }
+  table.matrix-table th { background: var(--gs-gray-1); color:white; padding:12px 14px; text-align:left; font-size:14px; vertical-align:top; border:1px solid var(--gs-gray-3); }
+  table.matrix-table th .matrix-head-name { font-weight:700; font-size:15px; margin-bottom:2px; }
+  table.matrix-table th .matrix-head-tag { font-weight:400; font-size:12px; opacity:0.85; margin-bottom:8px; }
+  table.matrix-table th .matrix-include { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; cursor:pointer; }
+  table.matrix-table td.field-label { background: var(--gs-gray-4); font-weight:600; font-size:13px; color: var(--gs-gray-1); padding:12px 14px; border:1px solid var(--gs-gray-3); white-space:nowrap; }
+  table.matrix-table td.matrix-cell { padding:12px 14px; border:1px solid var(--gs-gray-3); font-size:14px; color:black; text-align:left; }
+  table.matrix-table td.matrix-cell.diff { background:#fff7e6; color:#8a6d00; font-weight:600; }
+  table.matrix-table td.matrix-cell.pickable { cursor:pointer; }
+  table.matrix-table td.matrix-cell.pickable:hover { background:#eef4ff; }
+  table.matrix-table td.matrix-cell.selected { background: var(--gs-blue); color:white; font-weight:600; }
+  table.matrix-table td.matrix-cell.excluded { color: var(--gs-gray-2); text-decoration:line-through; background:var(--gs-gray-4); }
+  .matrix-footer { display:flex; gap:16px; padding: 16px 24px 40px; max-width:1100px; flex-wrap:wrap; }
+  .matrix-footer button { flex:1; min-width:220px; }
   .demo-panel { border: 1.5px dashed #F12178; border-radius: 10px; padding: 14px 20px; margin: 20px 24px 0; }
   .demo-panel .lbl { font-size:11px; font-weight:700; letter-spacing:0.04em; color:#F12178; text-transform:uppercase; margin-bottom:8px; }
   .demo-panel button { border:1.5px solid #F12178; color:#F12178; background:white; border-radius:6px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; margin-right:8px; margin-bottom:6px; }
   .demo-panel button:hover { background:#F12178; color:white; }
+  .demo-panel .ghost-row { margin-top:10px; padding-top:10px; border-top:1px dashed #F12178; display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; }
+  .demo-panel .ghost-row .ghost-lbl { font-size:10px; font-weight:700; letter-spacing:0.04em; color:#c9c9cc; text-transform:uppercase; margin-right:6px; }
+  .demo-panel .ghost-row a { color:#F12178; font-size:12px; font-weight:600; cursor:pointer; text-decoration:none; opacity:0.75; }
+  .demo-panel .ghost-row a:hover { text-decoration:underline; opacity:1; }
 </style>
 </head>
 <body>
@@ -244,15 +281,20 @@
   <div class="demo-panel">
     <div class="lbl"><i class="fa-solid fa-flask"></i> Demo controls — not part of the shipped product</div>
     <button onclick="goTo('list')">New Hires list</button>
-    <button onclick="openReview('completed')">Open a Completed record</button>
-    <button onclick="openReview('inprogress')">Open a stuck In-progress record</button>
     <button onclick="openDuplicateReview('carter')">Duplicate: completed vs. approved</button>
     <button onclick="openDuplicateReview('twoInProgress')">Duplicate: two in-progress</button>
     <button onclick="openDuplicateReview('inprogressCompleted')">Duplicate: in-progress vs. completed</button>
     <button onclick="openDuplicateReview('inprogressApproved')">Duplicate: in-progress vs. approved (override)</button>
+    <button onclick="openMatrixReview('jordan')">Duplicate: cluster of 4</button>
     <button onclick="openAiLog()">View AI activity log</button>
-    <button onclick="openReceipt('approved')">Open an Approved receipt</button>
-    <button onclick="openReceipt('rejected')">Open a Rejected receipt</button>
+    <div class="ghost-row">
+      <span class="ghost-lbl">Also handy</span>
+      <a id="dataModeLink" onclick="toggleDataMode()">Switch to a typical day</a>
+      <a onclick="openReview('completed')">Open a Completed record</a>
+      <a onclick="openReview('inprogress')">Open a stuck In-progress record</a>
+      <a onclick="openReceipt('approved')">Open an Approved receipt</a>
+      <a onclick="openReceipt('rejected')">Open a Rejected receipt</a>
+    </div>
   </div>
 
   <!-- ================= SCREEN: LIST ================= -->
@@ -299,7 +341,7 @@
     </div>
 
     <div class="pagination">
-      <div class="showing" id="showingLabel">Showing 1-15 of 15 items</div>
+      <div class="showing" id="showingLabel">Showing 1-21 of 21 items</div>
       <div class="rpp-and-pages">
         <div class="rpp">Rows per page <select><option>25</option><option>10</option><option>50</option></select></div>
         <div class="pages">
@@ -527,6 +569,31 @@
         <button class="btn-large btn-secondary-lg" onclick="goTo('list')">Back to list</button>
       </div>
     </div>
+  </div>
+
+  <!-- ================= SCREEN: DUPLICATE REMOVED RECEIPT ================= -->
+  <div class="screen" id="screen-duplicate-removed">
+    <div class="page-head">
+      <div class="crumb" onclick="goTo('list')"><i class="fa-solid fa-chevron-left"></i> Back to list</div>
+      <h1 id="dupRemovedHeading" style="font-family: var(--font-display); font-size:32px;"></h1>
+    </div>
+    <div class="receipt-wrap">
+      <div class="receipt-card">
+        <div class="rc-head"><i class="fa-solid fa-code-merge"></i> General information</div>
+        <div class="rc-body">
+          <div class="rc-field"><div class="k">Status</div><div class="v" style="color:var(--gs-purple);">Duplicate removed</div></div>
+          <div class="rc-field"><div class="k">Date</div><div class="v">Sep 24, 2026</div></div>
+          <div class="rc-field"><div class="k">Merged into</div><div class="v" id="dupRemovedInto"></div></div>
+        </div>
+      </div>
+      <div class="banner info">
+        <div class="icon"><i class="fa-solid fa-circle-info"></i></div>
+        <div class="body"><b>What happened</b><span>This registration was identified as a duplicate and closed after merging into the record above. No data from this attempt was lost.</span></div>
+      </div>
+      <div style="text-align:center; margin-top:24px;">
+        <button class="btn-large btn-secondary-lg" onclick="goTo('list')">Back to list</button>
+      </div>
+    </div>
   </div>  <!-- ================= SCREEN: AI — possible duplicate review ================= -->
   <div class="screen" id="screen-ai-duplicate">
     <div class="page-head">
@@ -536,6 +603,10 @@
     <div class="confidence-banner">
       <div class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <div class="body" id="dupBannerBody"></div>
+    </div>
+    <div class="prior-note-banner" id="dupPriorNoteBanner" style="display:none;">
+      <div class="icon"><i class="fa-solid fa-note-sticky"></i></div>
+      <div class="body" id="dupPriorNoteText"></div>
     </div>
     <div class="banner override" id="dupOverrideBanner" style="display:none; margin:0 24px 20px; max-width:1100px;">
       <div class="icon"><i class="fa-solid fa-user-check"></i></div>
@@ -556,6 +627,32 @@
     <div class="wizard-footer" style="max-width:700px; padding:24px 24px 40px;">
       <button class="btn-large btn-secondary-lg" onclick="goTo('ai-duplicate')">Cancel</button>
       <button class="btn-large btn-primary-lg disabled" id="mergeConfirmBtn" disabled onclick="confirmMerge()">Confirm merge</button>
+    </div>
+  </div>
+
+  <!-- ================= SCREEN: AI — matrix comparison (3+ candidates) ================= -->
+  <div class="screen" id="screen-ai-matrix">
+    <div class="page-head">
+      <div class="crumb" onclick="goTo('list')"><i class="fa-solid fa-chevron-left"></i> Back to list</div>
+      <h1 id="matrixHeading">AI insight: possible duplicate cluster</h1>
+    </div>
+    <div class="confidence-banner">
+      <div class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div class="body" id="matrixBannerBody"></div>
+    </div>
+    <div class="banner warn" id="matrixEscalateWarning" style="display:none; margin:0 24px 20px; max-width:1100px;">
+      <div class="icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="body"><b>Needs escalation, not a routine merge</b><span>More than one included record is already completed or approved. That means two active records may already exist for this person — worth investigating directly rather than merging automatically.</span></div>
+    </div>
+    <div class="matrix-wrap">
+      <table class="matrix-table">
+        <thead id="matrixHead"></thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+    <div class="matrix-footer" id="matrixFooter">
+      <button class="btn-large btn-primary-lg disabled" id="matrixMergeBtn" disabled onclick="confirmMatrixMerge()">Merge included records</button>
+      <button class="btn-ghost-outline" onclick="matrixNoneAreDuplicates()">None of these are duplicates</button>
     </div>
   </div>
 
@@ -591,6 +688,19 @@
   </div>
 </div>
 
+<!-- ---- Needs more information modal ---- -->
+<div class="modal-backdrop" id="needsInfoModal">
+  <div class="modal-box">
+    <div class="close-x" onclick="closeNeedsInfoModal()"><i class="fa-solid fa-times"></i></div>
+    <h3>What's still needed?</h3>
+    <p style="text-align:center; font-size:14px; color:var(--gs-gray-2); margin-top:-8px;">This note will show the next time anyone opens this review.</p>
+    <div style="margin-top:16px;">
+      <textarea id="needsInfoNote" maxlength="200" placeholder="e.g. Waiting on payroll to confirm the SSN with the prior employer"></textarea>
+    </div>
+    <div class="modal-actions-center"><button class="modal-btn approve" onclick="saveNeedsInfo()">Save</button></div>
+  </div>
+</div>
+
 <!-- ---- Reject confirmation modal ---- -->
 <div class="modal-backdrop" id="rejectModal">
   <div class="modal-box">
@@ -607,8 +717,12 @@
 </div>
 
 <script>
-const DATA = [
+const DATA_WORSTCASE = [
   { name: "Haylie Calzoni", date: "06/30/2026", status: "progress", stepsDone: 3, kind: "completed" },
+  { name: "Alex Bowen", date: "09/15/2026", status: "completed", kind: "completed",
+    aiResolved: "Entered today's date as their birthday. Our onboarding assistant blocked submission until they corrected it." },
+  { name: "Jennifer Whitfield", date: "09/20/2026", status: "completed", kind: "completed",
+    aiResolved: "Entered an implausible birth date and a misspelled name. Both were caught and corrected through the onboarding assistant before submission." },
   { name: "Zaire Vetrovs", date: "01/30/2026", status: "completed", kind: "completed" },
   { name: "Micheal Carter", date: "06/28/2026", status: "completed", kind: "completed",
     aiFlag: { type: "duplicate", scenario: "carter", label: "Possible duplicate",
@@ -628,6 +742,14 @@ const DATA = [
     aiFlag: { type: "duplicate", scenario: "inprogressCompleted", label: "Possible duplicate", detail: "Matches an in-progress registration, Marcus O'Dell." } },
   { name: "Devon Ashby", date: "09/10/2026", status: "progress", stepsDone: 3, kind: "inprogress",
     aiFlag: { type: "duplicate", scenario: "inprogressApproved", label: "Possible duplicate", detail: "Matches approved employee Devon Ashby; employee said this wasn't them." } },
+  { name: "Jordan Blake", date: "09/18/2026", status: "progress", stepsDone: 1, kind: "inprogress",
+    aiFlag: { type: "duplicate", scenario: "jordan", matrix: true, label: "Possible duplicate", detail: "Part of a four-registration cluster sharing a birth date and similar name." } },
+  { name: "Jordyn Blake", date: "09/12/2026", status: "progress", stepsDone: 3, kind: "inprogress",
+    aiFlag: { type: "duplicate", scenario: "jordan", matrix: true, label: "Possible duplicate", detail: "Part of a four-registration cluster sharing a birth date and similar name." } },
+  { name: "Jordan R. Blake", date: "09/08/2026", status: "completed", kind: "completed",
+    aiFlag: { type: "duplicate", scenario: "jordan", matrix: true, label: "Possible duplicate", detail: "Part of a four-registration cluster sharing a birth date and similar name." } },
+  { name: "Jordan Blakely", date: "03/02/2023", status: "approved", kind: "approved",
+    aiFlag: { type: "duplicate", scenario: "jordan", matrix: true, label: "Possible duplicate", detail: "Part of a four-registration cluster sharing a birth date and similar name." } },
   { name: "Nolan Carder", date: "05/10/2026", status: "completed", kind: "completed" },
   { name: "Madelyn Vaccaro", date: "05/10/2026", status: "completed", kind: "completed" },
   { name: "Tatiana Franci", date: "05/10/2026", status: "approved", kind: "approved" },
@@ -635,13 +757,39 @@ const DATA = [
   { name: "Gustavo Kreiger", date: "04/22/2026", status: "approved", kind: "approved" },
 ];
 
+const DATA_TYPICAL = [
+  { name: "Haylie Calzoni", date: "06/30/2026", status: "progress", stepsDone: 3, kind: "completed" },
+  { name: "Alex Bowen", date: "09/15/2026", status: "completed", kind: "completed",
+    aiResolved: "Entered today's date as their birthday. Our onboarding assistant blocked submission until they corrected it." },
+  { name: "Jennifer Whitfield", date: "09/20/2026", status: "completed", kind: "completed",
+    aiResolved: "Entered an implausible birth date and a misspelled name. Both were caught and corrected through the onboarding assistant before submission." },
+  { name: "Zaire Vetrovs", date: "01/30/2026", status: "completed", kind: "completed" },
+  { name: "Micheal Carter", date: "06/28/2026", status: "completed", kind: "completed",
+    aiFlag: { type: "duplicate", scenario: "carter", label: "Possible duplicate",
+      detail: "Name is a one-letter variant of an existing employee, Michael Carter, and the SSN and date of birth match exactly." } },
+  { name: "Carla Mango", date: "05/24/2026", status: "approved", kind: "approved" },
+  { name: "Lincoln Gouse", date: "05/10/2026", status: "rejected", kind: "rejected" },
+  { name: "Jocelyn Dias", date: "02/02/2026", status: "progress", stepsDone: 1, kind: "inprogress" },
+  { name: "Devon Ashby", date: "09/10/2026", status: "progress", stepsDone: 3, kind: "inprogress",
+    aiFlag: { type: "duplicate", scenario: "inprogressApproved", label: "Possible duplicate", detail: "Matches approved employee Devon Ashby; employee said this wasn't them." } },
+  { name: "Nolan Carder", date: "05/10/2026", status: "completed", kind: "completed" },
+  { name: "Madelyn Vaccaro", date: "05/10/2026", status: "completed", kind: "completed" },
+  { name: "Tatiana Franci", date: "05/10/2026", status: "approved", kind: "approved" },
+];
+
+let DATA = DATA_WORSTCASE;
+let currentDataMode = "worstcase";
+
 function statusPill(row) {
+  if (row.status === "duplicate_removed") return `<span class="status-pill" style="color:var(--gs-purple);"><i class="fa-solid fa-code-merge"></i> Duplicate removed</span>`;
   if (row.status === "approved") return `<span class="status-pill approved"><i class="fa-solid fa-circle-check"></i> Approved</span>`;
   if (row.status === "rejected") return `<span class="status-pill rejected"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>`;
   if (row.status === "completed") return `<span class="status-pill pending"><i class="fa-solid fa-clock"></i> Completed</span>`;
   return `<span class="status-pill progress"><span class="dot"></span> In progress ${row.stepsDone} of 4</span>`;
 }
 function actionLink(row) {
+  const escName = row.name.replace(/'/g, "\\'");
+  if (row.kind === "duplicate_removed") return `<a onclick="openDuplicateRemovedReceipt('${escName}')"><i class="fa-solid fa-eye"></i>View details</a>`;
   if (row.kind === "approved") return `<a onclick="openReceipt('approved')"><i class="fa-solid fa-eye"></i>View information</a>`;
   if (row.kind === "rejected") return `<a onclick="openReceipt('rejected')"><i class="fa-solid fa-eye"></i>View rejection</a>`;
   if (row.kind === "completed") return `<a onclick="openReview('completed')"><i class="fa-solid fa-list-check"></i>Review to approve</a>`;
@@ -650,16 +798,21 @@ function actionLink(row) {
 
 function aiBadge(row) {
   if (!row.aiFlag) return `<span class="ai-none">—</span>`;
+  if (row.aiFlag.type === "needs_info") {
+    const noteAttr = (row.aiFlag.note || "").replace(/"/g, "&quot;");
+    return `<span class="ai-badge needs-info" onclick="openDuplicateReview('${row.aiFlag.scenario}')" title="${noteAttr}"><i class="fa-solid fa-circle-question"></i>${row.aiFlag.label}</span>`;
+  }
   const icon = row.aiFlag.type === "duplicate" ? "fa-solid fa-clone" : "fa-solid fa-wand-magic-sparkles";
   const cls = row.aiFlag.type === "duplicate" ? "" : "suspicious";
-  const onclick = row.aiFlag.type === "duplicate" ? `openDuplicateReview('${row.aiFlag.scenario}')` : "openReview('inprogress')";
+  const onclick = row.aiFlag.matrix ? `openMatrixReview('${row.aiFlag.scenario}')`
+    : row.aiFlag.type === "duplicate" ? `openDuplicateReview('${row.aiFlag.scenario}')` : "openReview('inprogress')";
   return `<span class="ai-badge ${cls}" onclick="${onclick}"><i class="${icon}"></i>${row.aiFlag.label}</span>`;
 }
 
 function renderGrid(rows) {
   document.getElementById("gridBody").innerHTML = rows.map(r => `
     <tr>
-      <td>${r.name}</td>
+      <td><div class="name-cell"><span>${r.name}</span>${r.aiResolved ? `<span class="ai-resolved" data-tooltip="${r.aiResolved}"><i class="fa-solid fa-wand-magic-sparkles"></i></span>` : ""}</div></td>
       <td>${r.date}</td>
       <td>${statusPill(r)}</td>
       <td>${aiBadge(r)}</td>
@@ -700,6 +853,8 @@ const DUPLICATE_SCENARIOS = {
     bannerTitle: "High-confidence match",
     bannerText: "The date of birth and Social Security number submitted match an existing employee exactly. Only the first name differs by one letter — this looks like a data-entry variant of the same person, not a new hire.",
     approvedSide: "right",
+    leftName: "Micheal Carter", rightName: null,
+    rowToRemove: "Micheal Carter", survivorLabel: "Michael Carter's existing employee record",
     left: { tag: "Completed — awaiting review", head: "New submission", rows: [
       ["First name","Micheal",true], ["Last name","Carter",false], ["Date of birth","May 14, 1990",false],
       ["Social Security number","•••••6789",false], ["Submitted","Jun 28, 2026",false] ] },
@@ -715,6 +870,7 @@ const DUPLICATE_SCENARIOS = {
     heading: "AI insight: possible duplicate — two in-progress registrations",
     bannerTitle: "Likely the same abandoned-and-restarted attempt",
     bannerText: "Neither registration has finished yet. The name is a one-letter variant, the date of birth matches exactly, and the newer attempt was started nine days after the older one went idle — this looks like someone who lost track of their first attempt rather than two different new hires.",
+    leftName: "Eliot Mercer", rightName: "Elliot Mercer",
     left: { tag: "In progress — 1 of 4 steps", head: "Newer attempt", rows: [
       ["First name","Eliot",true], ["Last name","Mercer",false], ["Date of birth","Sep 2, 1994",false],
       ["Social Security number","Not yet entered",true], ["Started","Sep 15, 2026",false] ] },
@@ -730,7 +886,10 @@ const DUPLICATE_SCENARIOS = {
   inprogressCompleted: {
     heading: "AI insight: possible duplicate — in-progress vs. completed",
     bannerTitle: "Possibly a restart after noticing a mistake",
-    bannerText: "One of these submissions has already been completed and is awaiting your approval. The other is a newer, still-incomplete attempt with a matching Social Security number and birth date — likely the same person, though the newer attempt may exist because they noticed an error in the first one.",
+    bannerText: "One of these submissions has already been completed and is awaiting your approval. The other is a newer, still-incomplete attempt with a matching Social Security number and birth date — likely the same person. Because one side has already been completed, that's the record that will survive; the in-progress attempt will be closed as a duplicate once merged.",
+    approvedSide: "right",
+    leftName: "Marcus O'Dell", rightName: "Marcus Odell",
+    rowToRemove: "Marcus O'Dell", survivorLabel: "Marcus Odell",
     left: { tag: "In progress — 1 of 4 steps", head: "Newer attempt", rows: [
       ["First name","Marcus",false], ["Last name","O'Dell",true], ["Date of birth","Mar 3, 1992",false],
       ["Social Security number","•••••4471",false], ["Started","Sep 20, 2026",false] ] },
@@ -738,17 +897,18 @@ const DUPLICATE_SCENARIOS = {
       ["First name","Marcus",false], ["Last name","Odell",true], ["Date of birth","Mar 3, 1992",false],
       ["Social Security number","•••••4471",false], ["Submitted","Sep 12, 2026",false] ] },
     dispositions: [
-      ["Same person — review the completed submission, close the newer attempt","btn-large btn-primary-lg","use-completed"],
-      ["Same person — the newer attempt has better information, use it instead","btn-large btn-secondary-lg","use-newer"],
+      ["Same person — merge, keep the completed submission","btn-large btn-primary-lg","merge"],
       ["Different people — keep both","btn-large btn-secondary-lg","different"],
       ["Needs more information","btn-ghost-outline","later"] ]
   },
   inprogressApproved: {
     heading: "AI insight: possible duplicate — in-progress vs. approved employee",
     bannerTitle: "Data match: date of birth and SSN",
-    bannerText: "The in-progress registration's date of birth and Social Security number match an approved employee's record exactly.",
+    bannerText: "The in-progress registration's date of birth and Social Security number match an approved employee's record exactly. Because the matching side is already an approved employee, that record will survive; the in-progress attempt will be closed as a duplicate once merged.",
     override: true,
     overrideText: "During registration, the onboarding assistant caught this same match and asked the employee about it directly. They selected \u201cThis isn't me\u201d and continued on their own account. The data signal is strong enough that this is being surfaced for a second opinion rather than taken at face value.",
+    leftName: "Devon Ashby", rightName: null,
+    rowToRemove: "Devon Ashby", survivorLabel: "Devon Ashby's existing employee record",
     left: { tag: "In progress — 3 of 4 steps", head: "In-progress registration", rows: [
       ["First name","Devon",false], ["Last name","Ashby",false], ["Date of birth","Jan 30, 1988",false],
       ["Social Security number","•••••3391",false], ["Current step","3 of 4",false] ] },
@@ -756,11 +916,27 @@ const DUPLICATE_SCENARIOS = {
       ["First name","Devon",false], ["Last name","Ashby",false], ["Date of birth","Jan 30, 1988",false],
       ["Social Security number","•••••3391",false], ["Employee since","Feb 3, 2022",false] ] },
     dispositions: [
-      ["Same person — reject this attempt, direct them to their existing account","btn-large btn-primary-lg","reject-redirect"],
+      ["Same person — merge into the existing employee","btn-large btn-primary-lg","merge"],
       ["Different people — the employee's answer stands","btn-large btn-secondary-lg","different"],
       ["Needs more information","btn-ghost-outline","later"] ]
   }
 };
+
+const MATRIX_SCENARIOS = {
+  jordan: {
+    heading: "AI insight: possible duplicate cluster — 4 registrations",
+    bannerTitle: "Four registrations, one shared birth date",
+    bannerText: "All four share the same date of birth and a similar name. Three also share an identical Social Security number — the fourth doesn't, which usually means a coincidental match rather than the same person. Review each below; anything you uncheck is excluded from the merge entirely.",
+    fields: ["First name", "Last name", "Date of birth", "Social Security number"],
+    candidates: [
+      { rowName: "Jordan Blake", tag: "In progress — 1 of 4", statusRank: 1, values: ["Jordan", "Blake", "Apr 12, 1991", "•••••5521"] },
+      { rowName: "Jordyn Blake", tag: "In progress — 3 of 4", statusRank: 1, values: ["Jordyn", "Blake", "Apr 12, 1991", "•••••5521"] },
+      { rowName: "Jordan R. Blake", tag: "Completed — awaiting review", statusRank: 2, values: ["Jordan", "Blake", "Apr 12, 1991", "•••••5521"] },
+      { rowName: "Jordan Blakely", tag: "Approved — on file", statusRank: 3, values: ["Jordan", "Blakely", "Apr 12, 1991", "•••••7742"] }
+    ]
+  }
+};
+let matrixState = null;
 
 let currentDupScenario = null;
 let mergeChoices = {};
@@ -789,6 +965,15 @@ function openDuplicateReview(scenarioId) {
   } else {
     ob.style.display = "none";
   }
+  const pnb = document.getElementById("dupPriorNoteBanner");
+  const names = [s.leftName, s.rightName].filter(Boolean);
+  const priorRow = [...DATA_WORSTCASE, ...DATA_TYPICAL].find(r => names.includes(r.name) && r.aiFlag && r.aiFlag.type === "needs_info" && r.aiFlag.scenario === scenarioId);
+  if (priorRow) {
+    document.getElementById("dupPriorNoteText").innerHTML = `<b>Previously marked as needing more information</b>${priorRow.aiFlag.note || "(no note left)"}`;
+    pnb.style.display = "flex";
+  } else {
+    pnb.style.display = "none";
+  }
   const card = (c) => `
     <div class="compare-card">
       <div class="cc-head">${c.head} <span class="cc-tag">${c.tag}</span></div>
@@ -796,23 +981,109 @@ function openDuplicateReview(scenarioId) {
     </div>`;
   document.getElementById("dupCompareWrap").innerHTML = card(s.left) + card(s.right);
   document.getElementById("dupDispositionRow").innerHTML = s.dispositions.map(([label,cls,action]) =>
-    `<button class="${cls}" onclick="resolveDuplicate('${action}')">${label}</button>`).join("");
+    `<button class="${cls}" onclick="${action === "later" ? "openNeedsInfoModal()" : `resolveDuplicate('${action}')`}">${label}</button>`).join("");
   goTo("ai-duplicate");
 }
 
+function openNeedsInfoModal() {
+  document.getElementById("needsInfoNote").value = "";
+  document.getElementById("needsInfoModal").classList.add("show");
+}
+function closeNeedsInfoModal() {
+  document.getElementById("needsInfoModal").classList.remove("show");
+}
+function saveNeedsInfo() {
+  const note = document.getElementById("needsInfoNote").value.trim();
+  const s = DUPLICATE_SCENARIOS[currentDupScenario];
+  const names = [s.leftName, s.rightName].filter(Boolean);
+  [DATA_WORSTCASE, DATA_TYPICAL].forEach(ds => {
+    ds.forEach(row => {
+      if (names.includes(row.name) && row.aiFlag && row.aiFlag.scenario === currentDupScenario) {
+        row.aiFlag = { type: "needs_info", scenario: currentDupScenario, label: "Needs more info", note: note };
+      }
+    });
+  });
+  closeNeedsInfoModal();
+  renderGrid(DATA);
+  showToast("Marked as needing more information — the note will show next time this is opened.");
+  goTo("list");
+}
+
 function resolveDuplicate(choice) {
-  if (choice === "merge") { openMergeResolve(); return; }
+  const s = DUPLICATE_SCENARIOS[currentDupScenario];
+  if (choice === "merge") {
+    const hasDiffFields = s.left.rows.some((lrow, i) => lrow[2] || s.right.rows[i][2]);
+    if (hasDiffFields) { openMergeResolve(); return; }
+    finishMerge(s.rowToRemove, s.survivorLabel);
+    return;
+  }
+  if (choice === "close-newer" || choice === "close-older") {
+    const removeName = choice === "close-newer" ? s.leftName : s.rightName;
+    const survivorName = choice === "close-newer" ? s.rightName : s.leftName;
+    finishMerge(removeName, survivorName);
+    return;
+  }
+  if (choice === "different") {
+    const names = [s.leftName, s.rightName].filter(Boolean);
+    [DATA_WORSTCASE, DATA_TYPICAL].forEach(ds => {
+      ds.forEach(row => {
+        if (names.includes(row.name) && row.aiFlag && row.aiFlag.scenario === currentDupScenario) {
+          const otherName = names.find(n => n !== row.name) || "another registration";
+          delete row.aiFlag;
+          row.aiResolved = `AI flagged this as a possible duplicate of ${otherName}. An administrator reviewed it and confirmed these are two different people.`;
+        }
+      });
+    });
+    renderGrid(DATA);
+    showToast("Kept as two separate people. No further action is needed.");
+    goTo("list");
+    return;
+  }
   const messages = {
-    different: "Kept as two separate people. No further action is needed.",
-    later: "Left open for now — you can come back to it from the New Hires list.",
-    "close-newer": "The newer attempt is closed. The employee can continue from where the older attempt left off.",
-    "close-older": "The older attempt is closed. The employee can continue from where the newer attempt left off.",
-    "use-completed": "Proceeding with the completed submission — the newer, incomplete attempt is closed.",
-    "use-newer": "The newer attempt will be used going forward — the completed submission is closed without approval.",
-    "reject-redirect": "This attempt is rejected, and the employee will be pointed to their existing account."
+    later: "Left open for now — you can come back to it from the New Hires list."
   };
   showToast(messages[choice] || "Saved.");
   goTo("list");
+}
+
+function finishMerge(removeName, survivorName, newSurvivorName) {
+  const effectiveSurvivorName = newSurvivorName || survivorName;
+  if (removeName) {
+    [DATA_WORSTCASE, DATA_TYPICAL].forEach(ds => {
+      const survivorRow = ds.find(r => r.name === survivorName);
+      if (survivorRow && newSurvivorName && newSurvivorName !== survivorRow.name) {
+        survivorRow.name = newSurvivorName;
+      }
+      const row = ds.find(r => r.name === removeName);
+      if (row) {
+        row.status = "duplicate_removed";
+        row.kind = "duplicate_removed";
+        row.mergedInto = effectiveSurvivorName;
+        delete row.aiFlag;
+        delete row.aiResolved;
+      }
+      if (survivorRow) {
+        delete survivorRow.aiFlag;
+        survivorRow.aiResolved = `AI flagged this as a possible duplicate of ${removeName}. An administrator reviewed it and merged the duplicate registration into this record.`;
+      }
+    });
+  }
+  renderGrid(DATA);
+  showToast(removeName
+    ? `${removeName} is now marked Duplicate removed — merged into ${effectiveSurvivorName}.`
+    : `Merged into ${effectiveSurvivorName}.`);
+  goTo("list");
+}
+function computeMergedName(s) {
+  let first = null, last = null;
+  s.left.rows.forEach((lrow, i) => {
+    const rrow = s.right.rows[i];
+    const chosenSide = mergeChoices[i] || "right";
+    const val = chosenSide === "left" ? lrow[1] : rrow[1];
+    if (lrow[0] === "First name") first = val;
+    if (lrow[0] === "Last name") last = val;
+  });
+  return (first && last) ? `${first} ${last}` : null;
 }
 
 function openMergeResolve() {
@@ -849,15 +1120,22 @@ function openMergeResolve() {
 function updateMergeConfirm() {
   const total = document.querySelectorAll("#mergeFieldsWrap .merge-options").length;
   const done = Object.keys(mergeChoices).length;
-  const ready = total > 0 && done === total;
+  const ready = total === 0 || done === total;
   const btn = document.getElementById("mergeConfirmBtn");
   btn.disabled = !ready;
   btn.classList.toggle("disabled", !ready);
 }
 function confirmMerge() {
   if (document.getElementById("mergeConfirmBtn").disabled) return;
-  showToast("Merged — the value you chose for each field will be used going forward.");
-  goTo("list");
+  const s = DUPLICATE_SCENARIOS[currentDupScenario];
+  const mergedName = computeMergedName(s);
+  finishMerge(s.rowToRemove, s.survivorLabel, mergedName);
+}
+function openDuplicateRemovedReceipt(name) {
+  const row = DATA.find(r => r.name === name) || DATA_WORSTCASE.find(r => r.name === name) || DATA_TYPICAL.find(r => r.name === name);
+  document.getElementById("dupRemovedHeading").textContent = name;
+  document.getElementById("dupRemovedInto").textContent = (row && row.mergedInto) || "—";
+  goTo("duplicate-removed");
 }
 
 function switchLogTab(tab) {
@@ -868,7 +1146,169 @@ function switchLogTab(tab) {
     <tr><td>${r.date}</td><td>${r.who}</td><td>${r.action}</td><td>${r.detail}</td></tr>
   `).join("");
 }
+function toggleDataMode() {
+  currentDataMode = currentDataMode === "worstcase" ? "typical" : "worstcase";
+  DATA = currentDataMode === "typical" ? DATA_TYPICAL : DATA_WORSTCASE;
+  document.getElementById("searchInput").value = "";
+  document.getElementById("filtersRow").style.display = "none";
+  renderGrid(DATA);
+  document.getElementById("showingLabel").textContent = `Showing 1-${DATA.length} of ${DATA.length} items`;
+  document.getElementById("dataModeLink").textContent = currentDataMode === "typical"
+    ? "Switch to worst-case day"
+    : "Switch to a typical day";
+}
+
 function openAiLog() { switchLogTab("onboarding"); goTo("ai-log"); }
+
+/* ---------------- matrix comparison (3+ candidates) ---------------- */
+function openMatrixReview(scenarioId) {
+  const s = MATRIX_SCENARIOS[scenarioId];
+  matrixState = { scenarioId, included: s.candidates.map(() => true), picks: {} };
+  document.getElementById("matrixHeading").textContent = s.heading;
+  document.getElementById("matrixBannerBody").innerHTML = `<b>${s.bannerTitle}</b>${s.bannerText}`;
+  renderMatrixTable();
+  goTo("ai-matrix");
+}
+
+function renderMatrixTable() {
+  const s = MATRIX_SCENARIOS[matrixState.scenarioId];
+  let headHtml = "<tr><th></th>";
+  s.candidates.forEach((c, i) => {
+    headHtml += `<th>
+      <div class="matrix-head-name">${c.rowName}</div>
+      <div class="matrix-head-tag">${c.tag}</div>
+      <label class="matrix-include"><input type="checkbox" ${matrixState.included[i] ? "checked" : ""} onchange="toggleMatrixCandidate(${i})"> Include</label>
+    </th>`;
+  });
+  headHtml += "</tr>";
+  document.getElementById("matrixHead").innerHTML = headHtml;
+
+  let bodyHtml = "";
+  s.fields.forEach((field, fIdx) => {
+    const includedVals = s.candidates.map((c, i) => matrixState.included[i] ? c.values[fIdx] : null).filter(v => v !== null);
+    const counts = {};
+    includedVals.forEach(v => counts[v] = (counts[v] || 0) + 1);
+    const maxCount = Math.max(...Object.values(counts), 0);
+    const majorityVals = Object.keys(counts).filter(v => counts[v] === maxCount);
+    const hasDisagreement = new Set(includedVals).size > 1;
+
+    bodyHtml += `<tr><td class="field-label">${field}</td>`;
+    s.candidates.forEach((c, i) => {
+      const val = c.values[fIdx];
+      const excluded = !matrixState.included[i];
+      let cls = "matrix-cell";
+      if (excluded) {
+        cls += " excluded";
+      } else if (hasDisagreement) {
+        cls += " pickable";
+        if (!majorityVals.includes(val)) cls += " diff";
+        if (matrixState.picks[fIdx] === i) cls += " selected";
+      }
+      const onclick = (!excluded && hasDisagreement) ? ` onclick="pickMatrixValue(${fIdx},${i})"` : "";
+      bodyHtml += `<td class="${cls}"${onclick}>${val}</td>`;
+    });
+    bodyHtml += "</tr>";
+  });
+  document.getElementById("matrixBody").innerHTML = bodyHtml;
+  updateMatrixFooter();
+}
+
+function toggleMatrixCandidate(i) {
+  matrixState.included[i] = !matrixState.included[i];
+  matrixState.picks = {};
+  renderMatrixTable();
+}
+function pickMatrixValue(fieldIdx, candIdx) {
+  matrixState.picks[fieldIdx] = candIdx;
+  renderMatrixTable();
+}
+
+function updateMatrixFooter() {
+  const s = MATRIX_SCENARIOS[matrixState.scenarioId];
+  const includedIdxs = matrixState.included.map((inc, i) => inc ? i : null).filter(i => i !== null);
+  let allPicked = true;
+  s.fields.forEach((field, fIdx) => {
+    const vals = includedIdxs.map(i => s.candidates[i].values[fIdx]);
+    if (new Set(vals).size > 1 && matrixState.picks[fIdx] === undefined) allPicked = false;
+  });
+  const ranks = includedIdxs.map(i => s.candidates[i].statusRank);
+  const maxRank = ranks.length ? Math.max(...ranks) : 0;
+  const tiedAtMax = ranks.filter(r => r === maxRank).length;
+  const escalate = includedIdxs.length >= 2 && tiedAtMax > 1 && maxRank >= 2;
+  const warn = document.getElementById("matrixEscalateWarning");
+  const btn = document.getElementById("matrixMergeBtn");
+  warn.style.display = escalate ? "flex" : "none";
+  const ready = !escalate && includedIdxs.length >= 2 && allPicked;
+  btn.disabled = !ready;
+  btn.classList.toggle("disabled", !ready);
+}
+
+function confirmMatrixMerge() {
+  if (document.getElementById("matrixMergeBtn").disabled) return;
+  const s = MATRIX_SCENARIOS[matrixState.scenarioId];
+  const includedIdxs = matrixState.included.map((inc, i) => inc ? i : null).filter(i => i !== null);
+  let survivorIdx = includedIdxs[0];
+  includedIdxs.forEach(i => { if (s.candidates[i].statusRank > s.candidates[survivorIdx].statusRank) survivorIdx = i; });
+  const survivorOriginalName = s.candidates[survivorIdx].rowName;
+
+  const resolvedValue = (fieldIdx) => matrixState.picks[fieldIdx] !== undefined
+    ? s.candidates[matrixState.picks[fieldIdx]].values[fieldIdx]
+    : s.candidates[survivorIdx].values[fieldIdx];
+  const firstIdx = s.fields.indexOf("First name");
+  const lastIdx = s.fields.indexOf("Last name");
+  const finalFirst = firstIdx >= 0 ? resolvedValue(firstIdx) : null;
+  const finalLast = lastIdx >= 0 ? resolvedValue(lastIdx) : null;
+  const newSurvivorName = (finalFirst && finalLast) ? `${finalFirst} ${finalLast}` : null;
+
+  const removedNames = includedIdxs.filter(i => i !== survivorIdx).map(i => s.candidates[i].rowName);
+  const excludedNames = s.candidates.map((c, i) => ({ c, i })).filter(({ i }) => !matrixState.included[i]).map(({ c }) => c.rowName);
+
+  [DATA_WORSTCASE, DATA_TYPICAL].forEach(ds => {
+    const survivorRow = ds.find(r => r.name === survivorOriginalName);
+    if (survivorRow) {
+      if (newSurvivorName && newSurvivorName !== survivorRow.name) survivorRow.name = newSurvivorName;
+      delete survivorRow.aiFlag;
+      survivorRow.aiResolved = `AI flagged this as part of a cluster of ${s.candidates.length} possibly-duplicate registrations. An administrator reviewed the group and merged ${removedNames.length} of them into this record.`;
+    }
+    removedNames.forEach(rn => {
+      const row = ds.find(r => r.name === rn);
+      if (row) {
+        row.status = "duplicate_removed";
+        row.kind = "duplicate_removed";
+        row.mergedInto = newSurvivorName || survivorOriginalName;
+        delete row.aiFlag;
+        delete row.aiResolved;
+      }
+    });
+    excludedNames.forEach(en => {
+      const row = ds.find(r => r.name === en);
+      if (row) {
+        delete row.aiFlag;
+        row.aiResolved = "AI flagged this alongside a cluster of possibly-duplicate registrations. An administrator reviewed the group and determined this one was a coincidental match — a different person — and excluded it.";
+      }
+    });
+  });
+
+  renderGrid(DATA);
+  showToast(`Merged ${removedNames.length} duplicate${removedNames.length === 1 ? "" : "s"} into ${newSurvivorName || survivorOriginalName}.`);
+  goTo("list");
+}
+
+function matrixNoneAreDuplicates() {
+  const s = MATRIX_SCENARIOS[matrixState.scenarioId];
+  [DATA_WORSTCASE, DATA_TYPICAL].forEach(ds => {
+    s.candidates.forEach(c => {
+      const row = ds.find(r => r.name === c.rowName);
+      if (row) {
+        delete row.aiFlag;
+        row.aiResolved = "AI flagged this as part of a possible-duplicate cluster. An administrator reviewed the group and determined none of them were actually the same person.";
+      }
+    });
+  });
+  renderGrid(DATA);
+  showToast("Kept as separate people — no records were merged.");
+  goTo("list");
+}
 function showToast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg;
